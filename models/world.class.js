@@ -11,11 +11,23 @@ class World {
         this.keyboard = keyboard;
         this.draw();
         this.setWorld();
+        this.checkCollisions();
     }
 
     //this function sets a world object for the character
     setWorld() {
         this.character.world = this;
+    }
+
+    checkCollisions() {
+        setInterval(() => {
+            this.level.enemies.forEach((enemy) => {
+                if(this.character.isColliding(enemy) ) {
+                    this.character.hit();
+                    //console.log('Collision with character, energy: ', this.character.energy);
+                };
+            });
+        }, 200);
     }
 
 
@@ -48,7 +60,8 @@ class World {
             this.flipImage(mo);
         }
 
-        this.ctx.drawImage(mo.img, mo.x, mo.y, mo.width, mo.height);
+        mo.draw(this.ctx);
+        mo.drawFrame(this.ctx);
 
         if (mo.otherDirection) {
             this.flipImageBack(mo);
@@ -57,13 +70,10 @@ class World {
 
     flipImage(mo) {
         this.ctx.save();
-
         // translate remaps the 0/0 coordinates for width px to the right(x)
         this.ctx.translate(mo.width, 0);
-
         //this is needed to flip the element horizontally
         this.ctx.scale(-1, 1);
-
         //mirror x coordinate
         mo.x = mo.x * -1;
     }
