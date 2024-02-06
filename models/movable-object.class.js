@@ -1,17 +1,23 @@
-class MovableObject {
-    x = 120;
-    y = 275;
-    img;
-    height = 150;
-    width = 100;
-    imageCache = {};
-    currentImage = 0;
+class MovableObject extends DrawableObject {
     speed = 0.15;
     otherDirection = false;
     speedY = 0;
-    acceleration = 2;
+    acceleration = 2.5;
     energy = 100;
     lastHit = 0;
+    isPickable = true;
+    groundY = 130; //Attention this is not the ground y (its the character ground based on the image)
+    active = true;
+
+    // Variables for Intervals
+    chickenAnimations;
+    walkingAnimations;
+    characterAnimations;
+    movingAnimations;
+    poultAnimations;
+    hurtAnimations;
+    deadAnimations;
+
 
     applyGravity() {
         setInterval(() => {
@@ -22,94 +28,112 @@ class MovableObject {
         }, 1000 / 25)
     }
 
+    isIdle() {
+        let idletime = new Date().getTime() - this.lastAction; // diff in ms
+            idletime = idletime / 1000; //in seconds
+            return idletime > 2 && idletime < 4; 
+    }
+
+    isLongIdle() {
+        let idletime = new Date().getTime() - this.lastAction; // diff in ms
+            idletime = idletime / 1000; //in seconds
+            return idletime > 6 ; 
+    }
+
     isAboveGround() {
-        return this.y < 130;
-    }
-
-    draw(ctx) {
-        ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
-    }
-
-    drawFrame(ctx) {
-
-        if (this instanceof Character || this instanceof Chicken) {
-            ctx.beginPath();
-            ctx.lineWidth = '5';
-            ctx.strokeStyle = 'blue';
-            ctx.rect(this.x, this.y, this.width, this.height);
-            ctx.stroke();
-        }
-    }
-
-    // character.isColliding(chicken);
-    isCollidingNew(obj) {
-        return (this.X + this.width) >= obj.X && this.X <= (obj.X + obj.width) &&
-            (this.Y + this.offsetY + this.height) >= obj.Y &&
-            (this.Y + this.offsetY) <= (obj.Y + obj.height) &&
-            obj.onCollisionCourse; // Optional: hiermit könnten wir schauen, ob ein Objekt sich in die richtige Richtung bewegt. Nur dann kollidieren wir. Nützlich bei Gegenständen, auf denen man stehen kann.
-    }
-
-    isColliding(mo) {
-        return this.x + this.width > mo.x &&
-            this.y + this.height > mo.y &&
-            this.x < mo.x &&
-            this.y < mo.y + mo.height;
-    }
-
-    hit() {
-        this.energy -= 5;
-        if (this.energy < 0) {
-            this.energy = 0;
+        if (this instanceof ThrowableObject) { //Throwable Objects should always fall to bottom
+            return true;
         } else {
+                return this.y < this.groundY;
+            }
+        }
+
+        // used for picking objects - not in use on enemies as game will get too difficult
+        isColliding(mo) {
+            return this.x + this.width - this.offset.right > mo.x + mo.offset.left &&
+                this.y + this.height - this.offset.bottom > mo.y + mo.offset.top &&
+                this.x + this.offset.left < mo.x + mo.width - mo.offset.right &&
+                this.y + this.offset.top < mo.y + mo.height - mo.offset.bottom;
+        }
+
+        isCollidingRough(mo) {
+            return this.x + this.width > mo.x &&
+                this.y + this.height > mo.y &&
+                this.x < mo.x + mo.width &&
+                this.y < mo.y + mo.height;
+        }
+
+        isAbove(mo) {
+            return this.y + this.height < mo.y + mo.height;
+        }
+
+        removeObject() {
+            this.speedY = 10;
+            this.applyGravity();
+            setInterval(() => {
+                this.x += 5;
+                this.y += 10;
+            }, 25)
+        }
+
+        hit(val) {
+            if (!this.isHurt()) {
+                this.energy -= val;
+                this.lastHit = new Date().getTime();
+                if (this.energy < 0) {
+                    this.energy = 0;
+                }
+            }
+        }
+
+        // needed to hit endboss otherwise not every bottle hits him
+        endbossHit() {
+            this.energy -= 20;
             this.lastHit = new Date().getTime();
+            if (this.energy < 0) {
+                this.energy = 0;
+            }
+        }
+
+        isHurt() {
+            let timepassed = new Date().getTime() - this.lastHit; // diff in ms
+            timepassed = timepassed / 1000; //in seconds
+            return timepassed < .5;
+        }
+
+        isDead() {
+            return this.energy == 0;
+        }
+
+        moveRight() {
+            this.x += this.speed;
+        }
+
+        moveLeft() {
+            if (this instanceof Cloud) {
+                if (this.x < -this.width) {
+                    this.x = 2000;
+                }
+            }
+            this.x -= this.speed;
+        }
+
+        isClose(mo) {
+            return mo.x - (this.x + this.width) < 650;
+        }
+
+        jump() {
+            this.speedY = 30;
+        }
+
+        playAnimation(images) {
+            let i = this.currentImage % images.length;
+            let path = images[i];
+            this.img = this.imageCache[path];
+            this.currentImage++;
+        }
+
+        stopAnimation(intervalid) {
+            clearInterval(intervalid);
         }
     }
-
-    isHurt() {
-        let timepassed = new Date().getTime() - this.lastHit; // diff in ms
-        timepassed = timepassed / 1000; //in seconds
-        return timepassed < 1;
-    }
-
-    isDead() {
-        return this.energy == 0;
-    }
-
-    loadImage(path) {
-        this.img = new Image();
-        this.img.src = path;
-    }
-
-    /**
-     * 
-     * @param {Array} arr - ['image/image1.png', 'image/image2.png', ...]
-     */
-    loadImages(arr) {
-        arr.forEach((path) => {
-            let img = new Image();
-            img.src = path;
-            this.imageCache[path] = img;
-        });
-    }
-
-    moveRight() {
-        this.x += this.speed;
-        this.walking_sound.play();
-    }
-
-    moveLeft() {
-        this.x -= this.speed;
-        //this.otherDirection = true;
-    }
-
-    jump() {
-        this.speedY = 20;
-    }
-
-    playAnimation(images) {
-        let i = this.currentImage % images.length;
-        let path = images[i];
-        this.img = this.imageCache[path];
-        this.currentImage++;
-    }
-}

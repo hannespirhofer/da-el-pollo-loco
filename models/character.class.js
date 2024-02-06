@@ -1,10 +1,19 @@
 class Character extends MovableObject {
 
     x = 100;
-    y = 60;
+    y = 130;
     height = 300;
     width = 100;
+    offset = {
+        top: 150,
+        left: 40,
+        right: 40,
+        bottom: 30
+    }
     speed = 20;
+    lastAction;
+    deadShown = false;
+
     IMAGES_WALKING = [
         'img/2_character_pepe/2_walk/W-21.png',
         'img/2_character_pepe/2_walk/W-22.png',
@@ -42,36 +51,69 @@ class Character extends MovableObject {
         'img/2_character_pepe/5_dead/D-57.png'
     ];
 
+    IMAGES_IDLE = [
+        'img/2_character_pepe/1_idle/idle/I-1.png',
+        'img/2_character_pepe/1_idle/idle/I-2.png',
+        'img/2_character_pepe/1_idle/idle/I-3.png',
+        'img/2_character_pepe/1_idle/idle/I-4.png',
+        'img/2_character_pepe/1_idle/idle/I-5.png',
+        'img/2_character_pepe/1_idle/idle/I-6.png',
+        'img/2_character_pepe/1_idle/idle/I-7.png',
+        'img/2_character_pepe/1_idle/idle/I-8.png',
+        'img/2_character_pepe/1_idle/idle/I-9.png',
+        'img/2_character_pepe/1_idle/idle/I-10.png'
+    ];
+
+    IMAGES_LONGIDLE = [
+        'img/2_character_pepe/1_idle/long_idle/I-11.png',
+        'img/2_character_pepe/1_idle/long_idle/I-12.png',
+        'img/2_character_pepe/1_idle/long_idle/I-13.png',
+        'img/2_character_pepe/1_idle/long_idle/I-14.png',
+        'img/2_character_pepe/1_idle/long_idle/I-15.png',
+        'img/2_character_pepe/1_idle/long_idle/I-16.png',
+        'img/2_character_pepe/1_idle/long_idle/I-17.png',
+        'img/2_character_pepe/1_idle/long_idle/I-18.png',
+        'img/2_character_pepe/1_idle/long_idle/I-19.png',
+        'img/2_character_pepe/1_idle/long_idle/I-20.png'
+    ];
+
     world;
     walking_sound = new Audio('audio/walk.mp3');
 
     constructor() {
-        super().loadImage('img/2_character_pepe/2_walk/W-21.png');
+        super();
+        this.loadImage('img/2_character_pepe/2_walk/W-21.png');
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_JUMPING);
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.IMAGES_DEAD);
+        this.loadImages(this.IMAGES_IDLE);
+        this.loadImages(this.IMAGES_LONGIDLE);
         this.applyGravity();
         this.animate();
     }
 
     animate() {
 
-        setInterval(() => {
+        this.movingAnimations = setInterval(() => {
             this.walking_sound.pause();
 
             if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
+                this.lastAction = new Date().getTime();
                 this.otherDirection = false;
                 this.moveRight();
+                this.walking_sound.play();
             }
 
             if (this.world.keyboard.LEFT && this.x > 0) {
+                this.lastAction = new Date().getTime();
+                this.otherDirection = true;
                 this.moveLeft();
                 this.walking_sound.play();
-                this.otherDirection = true;
             }
 
             if (this.world.keyboard.SPACE && !this.isAboveGround()) {
+                this.lastAction = new Date().getTime();
                 this.jump();
             }
 
@@ -79,11 +121,19 @@ class Character extends MovableObject {
         }, 1000 / 60);
 
 
+        // Character Animation Logic
+        this.characterAnimations = setInterval(() => {
+            if (this.isDead() && !this.deadShown) {
 
-        setInterval(() => {
+                world.gameEnd = true;
+                world.gameLost = true;
 
-            if (this.isDead()) {
                 this.playAnimation(this.IMAGES_DEAD);
+                this.animateDead();
+            } else if (this.isIdle()) {
+                this.playAnimation(this.IMAGES_IDLE);
+            } else if (this.isLongIdle()) {
+                this.playAnimation(this.IMAGES_LONGIDLE);
             } else if (this.isHurt()) {
                 this.playAnimation(this.IMAGES_HURT);
             } else if (this.isAboveGround()) {
@@ -93,8 +143,19 @@ class Character extends MovableObject {
                     this.playAnimation(this.IMAGES_WALKING);
                 }
             }
+
         }, 1000 / 15);
     }
 
+    animateDead() {
+        this.deadShown = true;
+        setTimeout(() => {
+            clearInterval(this.characterAnimations);
+            clearInterval(this.movingAnimations);
+            this.loadImage(this.IMAGES_DEAD[3]);
 
+            // Stops the endboss from moving so that it will not become visible when game ended
+            clearInterval(this.world.level.enemies[6].movingAnimations);
+        }, 1000);
+    }
 }

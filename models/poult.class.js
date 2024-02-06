@@ -1,42 +1,41 @@
-class Chicken extends MovableObject {
+class Poult extends MovableObject {  
 
     x = 100;
-    y = 360;
-    height = 70;
-    width = 70;
+    y = 390;
+    height = 40;
+    width = 40;
     offset = {
         top: 8,
-        left: 25,
-        right: 25,
+        left: 8,
+        right: 8,
         bottom: 8
     }
-    speed = 0.25;
-    attack = false;    
+    speed = 0.10;
 
     IMAGES_WALKING = [
-        'img/3_enemies_chicken/chicken_normal/1_walk/1_w.png',
-        'img/3_enemies_chicken/chicken_normal/1_walk/2_w.png',
-        'img/3_enemies_chicken/chicken_normal/1_walk/3_w.png'
+        'img/3_enemies_chicken/chicken_small/1_walk/1_w.png',
+        'img/3_enemies_chicken/chicken_small/1_walk/2_w.png',
+        'img/3_enemies_chicken/chicken_small/1_walk/3_w.png'
     ];
 
     IMAGES_DEAD = [
-        'img/3_enemies_chicken/chicken_normal/2_dead/dead.png'
-    ];
+        'img/3_enemies_chicken/chicken_small/2_dead/dead.png'
+    ]
 
     constructor() {
         super();
-        this.loadImage('img/3_enemies_chicken/chicken_normal/1_walk/1_w.png');
+        this.loadImage(this.IMAGES_WALKING[0]);
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_DEAD);
 
-        this.x = 400 + Math.random() * 1500;
-        this.speed = 0.15 + Math.random() * 0.5;
+        this.x = 300 + Math.random() * 1500;
+        this.speed = 0.15 + Math.random() * 0.8;
         this.animate();
     }
 
     animate() {        
         // Check Interval
-        this.chickenAnimations = setInterval(() => {
+        this.poultAnimations = setInterval(() => {
             if (this.attack) {
                 this.speed = 1.5;
             }
