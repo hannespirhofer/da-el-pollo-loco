@@ -45,6 +45,8 @@ class Endboss extends MovableObject {
         'img/4_enemie_boss_chicken/2_alert/G12.png'
     ];
 
+    nugget_sound = new Audio('audio/chickennugget.mp3');
+
     constructor() {
         super();
         this.loadImage(this.IMAGES_WALKING[0]);
@@ -70,6 +72,8 @@ class Endboss extends MovableObject {
 
         this.deadAnimations = setInterval(() => {
             if (this.isDead()) {
+
+                this.nugget_sound.play();
                 
                 world.gameEnd = true;
                 world.gameWon = true;

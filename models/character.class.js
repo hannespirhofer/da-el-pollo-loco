@@ -78,7 +78,13 @@ class Character extends MovableObject {
     ];
 
     world;
+
+    hurtPlayed = false;
     walking_sound = new Audio('audio/walk.mp3');
+    jumping_sound = new Audio('audio/jump.mp3');
+    hurt_sound = new Audio('audio/hurt.mp3');
+    dead_sound = new Audio('audio/dead.mp3');
+    
 
     constructor() {
         super();
@@ -115,6 +121,7 @@ class Character extends MovableObject {
             if (this.world.keyboard.SPACE && !this.isAboveGround()) {
                 this.lastAction = new Date().getTime();
                 this.jump();
+                this.jumping_sound.play();
             }
 
             this.world.camera_x = -this.x + 100;
@@ -144,11 +151,18 @@ class Character extends MovableObject {
                 }
             }
 
+            /* Audio */
+            if (this.isHurt() && !this.hurtPlayed) {
+                this.hurt_sound.play();
+                this.hurtPlayed = true;
+            }
+
         }, 1000 / 15);
     }
 
     animateDead() {
         this.deadShown = true;
+        this.dead_sound.play();
         setTimeout(() => {
             clearInterval(this.characterAnimations);
             clearInterval(this.movingAnimations);

@@ -4,6 +4,7 @@ class World {
 
     requestframeid;
 
+    movableObject = new MovableObject();
     character = new Character();
     healthBar = new HealthBar(); // Character Health
     endbossBar = new EndbossBar(); // Endboss Health Bar
@@ -22,6 +23,9 @@ class World {
     coinscore = 0;
     bottle;
 
+    coin_sound = new Audio('audio/coin.mp3');
+    bottle_sound = new Audio('audio/bottle.mp3');
+
 
     constructor(canvas, keyboard) {
         this.ctx = canvas.getContext('2d');
@@ -33,6 +37,8 @@ class World {
         this.throwObject();
     }
 
+    mainInterval;
+
     //this function sets a world object for the character
     setWorld() {
         this.character.world = this;
@@ -40,38 +46,15 @@ class World {
 
     //Interval 60tps to check collisions and if game is over
     checkCollision() {
-        setInterval(() => {
+        this.mainInterval = setInterval(() => {
             // Check collisions
             this.checkCollisions();
-
-            // Check game End
-            if (this.gameEnd) {
-                this.drawEnd();
-            }
         }, 1000 / 60);
     }
 
-    drawEnd() {
-        if (this.gameEnd) {
-            this.clearAllIntervals();
-            cancelAnimationFrame(this.requestframeid);
-            if (this.gameWon) {
-                //when won
-                let won = new Endscreen(true);
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.addToMap(won);
-            } else {
-                //when lost
-                let lost = new Endscreen(false);
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                this.addToMap(lost);
-            }
-        }
-    }
-
-    // Interval 10 tps to check throw Objects
+    // Interval 10 fps to check throw Objects
     throwObject() {
-        setInterval(() => {
+        this.throwObjectsInterval = setInterval(() => {
             // Check throwobjects
             this.throwObjects();
         }, 1000 / 10);
@@ -87,16 +70,18 @@ class World {
     }
 
     checkCollisions() {
-        // Logic for Chicken and Poult         
+        // Character hitting Poult OR Chicken        
         this.level.enemies
             .filter(enemy => enemy instanceof Poult || enemy instanceof Chicken)
             .forEach(enemy => {
                 if (this.character.isCollidingRough(enemy) && this.character.isAbove(enemy) && enemy.active) {
                     enemy.energy = 0;
+                    clearInterval(enemy.walkingAnimations);
+                    clearInterval(enemy.movingAnimations);
                 };
             })
 
-        // Logic for Poult Only 
+        // Poult hitting Character
         this.level.enemies
             .filter(enemy => enemy instanceof Poult)
             .forEach(enemy => {
@@ -106,7 +91,7 @@ class World {
                 }
             })
 
-        // Logic for Chicken Only  
+        // Chicken hitting Character
         this.level.enemies
             .filter(enemy => enemy instanceof Chicken)
             .forEach(enemy => {
@@ -147,6 +132,7 @@ class World {
                 this.bottlescore += 1;
                 this.bottlesBar.setPercentage(this.bottlescore * 20);
                 bottle.removeObject();
+                this.bottle_sound.play();
             };
         });
 
@@ -157,10 +143,11 @@ class World {
                 this.coinscore += 1;
                 this.coinsBar.setPercentage(this.coinscore * 20);
                 coin.removeObject();
+                this.coin_sound.play();
             };
         });
 
-        // Checking if objects are close
+        // Checking if endboss is close to the character
         if (this.character.isClose(this.level.enemies[this.level.enemies.length - 1])) {
             this.level.enemies[this.level.enemies.length - 1].alerted = true;
         }
@@ -197,6 +184,24 @@ class World {
         this.requestframeid = requestAnimationFrame(function () {
             self.draw();
         });
+
+        if (this.gameEnd) {
+            if (this.gameWon) {
+                this.addToMap(new Endscreen(true));
+                this.drawEnd();
+            } else {
+                this.addToMap(new Endscreen(false));
+                this.drawEnd();
+            }
+
+        }
+    }
+
+    drawEnd() {
+        setTimeout(() => {
+            this.clearAllIntervals();
+            cancelAnimationFrame(this.requestframeid);
+        }, 1000);
     }
 
     addObjectsToMap(objects) {
@@ -234,6 +239,10 @@ class World {
     }
 
     clearAllIntervals() {
+        //Clear interval checking if game is running anbd checking for collisions on World
+        clearInterval(this.mainInterval)
+
+        // For the character
         clearInterval(this.character.movingAnimations);
         clearInterval(this.character.characterAnimations);
 
@@ -241,18 +250,20 @@ class World {
         this.level.enemies
             .filter(enemy => enemy instanceof Chicken)
             .forEach(enemy => {
-                clearInterval(enemy.chickenAnimations);
+                /* clearInterval(enemy.chickenAnimations);
                 clearInterval(enemy.walkingAnimations);
-                clearInterval(enemy.movingAnimations);
+                clearInterval(enemy.movingAnimations); */
+                clearInterval(enemy.gravityAnimation);
             })
 
         // For poult intervals
         this.level.enemies
             .filter(enemy => enemy instanceof Poult)
             .forEach(enemy => {
-                clearInterval(enemy.poultAnimations);
+                /* clearInterval(enemy.poultAnimations);
                 clearInterval(enemy.walkingAnimations);
-                clearInterval(enemy.movingAnimations);
+                clearInterval(enemy.movingAnimations); */
+                clearInterval(enemy.gravityAnimation);
             })
 
         // For endboss intervals
@@ -265,14 +276,15 @@ class World {
             })
 
         //backgroundobjects clouds etc
-        this.level.backgroundObjects
-            .filter(bgo => bgo instanceof Cloud)
+        this.level.clouds
             .forEach(cloud => {
                 clearInterval(cloud.movingAnimations);
             })
 
+        // bottles gravity
         this.throwableObjects
             .forEach(tho => {
+                clearInterval(tho.gravityAnimation);
                 clearInterval(tho.movingAnimations);
             })
     }

@@ -25,7 +25,7 @@ class DrawableObject {
         });
     }
 
-    draw(ctx) {
+    draw(ctx) {        
         // drawImage is an official JS method()
         if (this.img) {
             try {

@@ -1,9 +1,166 @@
+@font-face {
+    font-family: LaTequila;
+    src: url(./fonts/latequila/La\ Tequila.ttf);
+}
+
+@font-face {
+    font-family: ElRioLobo;
+    src: url(./fonts/elriolobo/ELRIOTT2.TTF);
+}
+
 body {
+    font-family: LaTequila, Tahoma, Verdana, sans-serif;
+    margin: 0;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    background-image: url("img/backgrounds/desert2.png");
+}
+
+h1 {
+    color: #e05b00;
+    text-shadow: 2px 2px #ffd70b;
+}
+
+.d-none {
+    display: none !important;
+}
+
+.container {
+    height: 480px;
+    width: 720px;
+    position: relative;
+}
+
+.help-bar {
+    position: absolute;
+    left: -170px;
+    top: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    background-color: rgb(248 125 29 / 56%);
+    padding: 0 10px;
+}
+
+.key-description {
+    font-size: 12px;
+}
+
+.help {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.info {
+    color: #fff;
+    text-shadow: 2px 2px black;
+}
+
+.info:hover {
+    cursor: pointer;
+}
+
+.key {
+    color: #ffd500;
+    text-shadow: 2px 2px black;
+    font-size: 18px !important;
+}
+
+.info-box {
+    background-color: #ffd70b;
+    z-index: 10;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+}
+
+.close {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 40px 80px 0 0;
+    box-sizing: border-box;
+}
+
+.instructions-box {
+    padding: 20px 30px 15px 50px;
+}
+
+.close:hover {
+    cursor: pointer;
+}
+
+.start-page {
+    height: 100%;
+    width: 100%;
+    background: url(./img/9_intro_outro_screens/start/startscreen_1.png) no-repeat 0 0 / 720px 480px;
+    display: flex;
+    justify-content: center;
+}
+
+.end-page {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    position: absolute;
+}
+
+.start-btn {
+    font-size: 18px;
+    margin-top: 60px;
+    position: absolute;
+    top: 0;
+    color: #ffd70b;
+    font-size: 1.5em;
+    transition: transform 0.3s;
+    text-shadow: 5px 2px #9f3b18;
+}
+
+.restart-btn {
+    margin-bottom: 60px;
+    position: absolute;
+    bottom: 0;
+    color: #ffd70b;
+    font-size: 1.5em;
+    transition: transform 0.3s;
+    text-shadow: 5px 2px #9f3b18;
 }
 
 canvas {
     background-color: black;
+}
+
+.restart-btn:hover,
+.start-btn:hover {
+    animation-play-state: paused;
+    cursor: pointer;
+}
+
+
+@keyframes resize {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.start-btn:not(:hover):not(:active),
+.restart-btn:not(:hover):not(:active) {
+    animation: resize 2s infinite;
 }

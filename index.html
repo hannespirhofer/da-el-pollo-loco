@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <link rel="icon" type="image/png" sizes="16x16" href="./img/favicon2/favicon.ico">  
     <link rel="stylesheet" href="style.css">
     
     <title>El Pollo Loco</title>
@@ -30,9 +31,45 @@
     <script src="js/game.js"></script>
     
 </head>
-<body onload="init()">
+<body>
 
     <h1>El Pollo Loco</h1>
-    <canvas id="canvas" width="720" height="480"></canvas>    
+    <div class="container">
+        <div id="help-box" class="help-bar">
+            <div class="help info" onclick="showInfoBox()">Info</div>
+            <div class="help">
+                <span class="key-description">Move Left</span>
+                <span class="key">LEFT</span>               
+            </div>
+            <div class="help">
+                <span class="key-description">Move Right</span>
+                <span class="key">RIGHT</span>                
+            </div>
+            <div class="help">
+                <span class="key-description">Jump</span>
+                <span class="key">SPACE</span>                                
+            </div>
+            <div class="help">
+                <span class="key-description">Throw</span>
+                <span class="key">D</span>
+            </div>
+        </div>  
+        <div id="infobox" class="info-box d-none">
+            <div class="close" onclick="closeInfoBox()">X</div>
+            <div class="instructions-box">
+                El Pollo Loco is a 2D action game where a Mexican hero 
+                battles against chicks, chickens, and a giant chicken boss.<br><br> 
+                Jump on chicks and chickens, and hurl Tabasco bottles at 
+                the boss to win.<br><br> Hit the boss three times to emerge victorious!</div>
+        </div> 
+        <div id="startpage" class="start-page">
+            <div class="start-btn" onclick="startGame()">Start Game</div>
+            <img src="">
+        </div>
+        <div id="endPage" class="end-page d-none">
+            <div class="restart-btn" onclick="window.location.reload()">RESTART</div>
+        </div>
+        <canvas id="canvas" class="d-none" width="720" height="480"></canvas>
+    </div>
 </body>
 </html>
