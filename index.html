@@ -52,7 +52,7 @@
             <div class="help">
                 <span class="key-description">Throw</span>
                 <span class="key">D</span>
-            </div>
+            </div>            
         </div>  
         <div id="infobox" class="info-box d-none">
             <div class="close" onclick="closeInfoBox()">X</div>
@@ -62,9 +62,16 @@
                 Jump on chicks and chickens, and hurl Tabasco bottles at 
                 the boss to win.<br><br> Hit the boss three times to emerge victorious!</div>
         </div> 
+        <div id="overlay-icons" class="overlay">
+            <div class="overlay-icon mute" id="mutebtn" onclick="toggleAudio()">
+                <img id="audioimg" src="img/sound.png">
+            </div>
+            <div class="overlay-icon fullscreen" onclick="toggleFullScreen()">
+                <img src="img/fullscreen.png">
+            </div>            
+        </div>
         <div id="startpage" class="start-page">
-            <div class="start-btn" onclick="startGame()">Start Game</div>
-            <img src="">
+            <div class="start-btn" onclick="startGame()">Start Game</div>            
         </div>
         <div id="endPage" class="end-page d-none">
             <div class="restart-btn" onclick="window.location.reload()">RESTART</div>

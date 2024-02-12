@@ -132,7 +132,9 @@ class World {
                 this.bottlescore += 1;
                 this.bottlesBar.setPercentage(this.bottlescore * 20);
                 bottle.removeObject();
-                this.bottle_sound.play();
+                if (audio) {
+                    this.bottle_sound.play();
+                }
             };
         });
 
@@ -143,7 +145,9 @@ class World {
                 this.coinscore += 1;
                 this.coinsBar.setPercentage(this.coinscore * 20);
                 coin.removeObject();
-                this.coin_sound.play();
+                if (audio) {
+                    this.coin_sound.play();
+                }
             };
         });
 

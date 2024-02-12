@@ -46,6 +46,7 @@ class Endboss extends MovableObject {
     ];
 
     nugget_sound = new Audio('audio/chickennugget.mp3');
+    gamewon_sound = new Audio('audio/win.mp3');
 
     constructor() {
         super();
@@ -72,8 +73,10 @@ class Endboss extends MovableObject {
 
         this.deadAnimations = setInterval(() => {
             if (this.isDead()) {
-
-                this.nugget_sound.play();
+                
+                if (audio) {
+                    this.gamewon_sound.play();
+                }
                 
                 world.gameEnd = true;
                 world.gameWon = true;

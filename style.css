@@ -19,6 +19,10 @@ body {
     background-image: url("img/backgrounds/desert2.png");
 }
 
+canvas {
+    display: block;
+}
+
 h1 {
     color: #e05b00;
     text-shadow: 2px 2px #ffd70b;
@@ -72,6 +76,25 @@ h1 {
     font-size: 18px !important;
 }
 
+.overlay {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    display: flex;
+    gap: 16px;
+}
+
+.overlay-icon > img {
+    height: 30px;
+    width: 30px;
+}
+
+.fullscreen:hover,
+.mute:hover {
+    cursor: pointer;
+    color: #ffd500;
+}
+
 .info-box {
     background-color: #ffd70b;
     z-index: 10;
@@ -101,7 +124,8 @@ h1 {
 .start-page {
     height: 100%;
     width: 100%;
-    background: url(./img/9_intro_outro_screens/start/startscreen_1.png) no-repeat 0 0 / 720px 480px;
+    background: url(./img/9_intro_outro_screens/start/startscreen_1.png) no-repeat 0 0 / 100% 100%;
+    object-fit: cover;
     display: flex;
     justify-content: center;
 }
@@ -163,4 +187,32 @@ canvas {
 .start-btn:not(:hover):not(:active),
 .restart-btn:not(:hover):not(:active) {
     animation: resize 2s infinite;
+}
+
+@media (max-width: 1100px) {
+    
+}
+
+@media only screen and ( max-width: 720px ) {
+    h1,
+    .help-bar {
+        display: none;
+    }
+    
+    .container,
+    canvas {
+        width: 100%;
+    }
+}
+
+@media only screen and ( max-height: 480px ) {
+    h1,
+    .help-bar {
+        display: none;
+    }
+    
+    .container,
+    canvas {
+        height: 100vh;
+    }
 }

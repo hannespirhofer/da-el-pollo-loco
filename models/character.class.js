@@ -108,20 +108,26 @@ class Character extends MovableObject {
                 this.lastAction = new Date().getTime();
                 this.otherDirection = false;
                 this.moveRight();
-                this.walking_sound.play();
+                if (audio) {
+                    this.walking_sound.play();
+                }
             }
 
             if (this.world.keyboard.LEFT && this.x > 0) {
                 this.lastAction = new Date().getTime();
                 this.otherDirection = true;
                 this.moveLeft();
-                this.walking_sound.play();
+                if (audio) {
+                    this.walking_sound.play();
+                }
             }
 
             if (this.world.keyboard.SPACE && !this.isAboveGround()) {
                 this.lastAction = new Date().getTime();
                 this.jump();
-                this.jumping_sound.play();
+                if (audio) {
+                    this.jumping_sound.play();
+                }
             }
 
             this.world.camera_x = -this.x + 100;
@@ -162,7 +168,9 @@ class Character extends MovableObject {
 
     animateDead() {
         this.deadShown = true;
-        this.dead_sound.play();
+        if (audio) {
+            this.dead_sound.play();
+        }
         setTimeout(() => {
             clearInterval(this.characterAnimations);
             clearInterval(this.movingAnimations);
