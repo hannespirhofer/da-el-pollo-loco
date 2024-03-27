@@ -7,9 +7,9 @@ class Endscreen extends DrawableObject {
 
     constructor(gamewon) {
         super();
-        if (gamewon) { // true when game won
+        if (gamewon) {
             this.loadImage('img/9_intro_outro_screens/game_over/game won.png');
-        } else { // false when lost
+        } else {
             this.loadImage('img/9_intro_outro_screens/game_over/game over!.png');
         }
     }

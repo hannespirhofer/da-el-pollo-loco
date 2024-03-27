@@ -1,0 +1,16 @@
+DONE
+adjust idletime
+adjust hop on enemy (character gets hitted sometimes)
+endboss bar should not reduce 2/3 on first bottle
+bottle bar not reducing correctly
+idle when throwing bottles
+idle logic only starts when character is moved- why?
+enemy attacking character when sleeping check
+clean and add js doc to world
+adjust responsiveness (startscreen and endscreen image)
+add mobile overlay to turn screen to landscape
+audio dont play initially
+as well it doesnt play when user dont do something first
+
+OPEN
+NOTHING

@@ -1,9 +1,8 @@
 class Character extends MovableObject {
-
     x = 100;
-    y = 130;
+    y = 100;
     height = 300;
-    width = 100;
+    width = 80;
     offset = {
         top: 150,
         left: 40,
@@ -12,6 +11,7 @@ class Character extends MovableObject {
     }
     speed = 20;
     lastAction;
+    lastHit;
     deadShown = false;
 
     IMAGES_WALKING = [
@@ -78,13 +78,12 @@ class Character extends MovableObject {
     ];
 
     world;
-
     hurtPlayed = false;
     walking_sound = new Audio('audio/walk.mp3');
     jumping_sound = new Audio('audio/jump.mp3');
     hurt_sound = new Audio('audio/hurt.mp3');
     dead_sound = new Audio('audio/dead.mp3');
-    
+
 
     constructor() {
         super();
@@ -95,77 +94,117 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_DEAD);
         this.loadImages(this.IMAGES_IDLE);
         this.loadImages(this.IMAGES_LONGIDLE);
+        this.lastAction = new Date().getTime();
         this.applyGravity();
         this.animate();
     }
 
+    /**
+     * The Character animate function sets intervals for the Character States as well as Keyboard Events.
+     * Depending on State and events different methods are called, values set and images or audio loaded
+     */
     animate() {
-
         this.movingAnimations = setInterval(() => {
             this.walking_sound.pause();
-
-            if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
-                this.lastAction = new Date().getTime();
-                this.otherDirection = false;
-                this.moveRight();
-                if (audio) {
-                    this.walking_sound.play();
-                }
-            }
-
-            if (this.world.keyboard.LEFT && this.x > 0) {
-                this.lastAction = new Date().getTime();
-                this.otherDirection = true;
-                this.moveLeft();
-                if (audio) {
-                    this.walking_sound.play();
-                }
-            }
-
-            if (this.world.keyboard.SPACE && !this.isAboveGround()) {
-                this.lastAction = new Date().getTime();
-                this.jump();
-                if (audio) {
-                    this.jumping_sound.play();
-                }
-            }
-
+            this.characterRight();
+            this.characterLeft();
+            this.characterJump();
             this.world.camera_x = -this.x + 100;
         }, 1000 / 60);
 
-
-        // Character Animation Logic
         this.characterAnimations = setInterval(() => {
-            if (this.isDead() && !this.deadShown) {
-
-                world.gameEnd = true;
-                world.gameLost = true;
-
-                this.playAnimation(this.IMAGES_DEAD);
-                this.animateDead();
-            } else if (this.isIdle()) {
-                this.playAnimation(this.IMAGES_IDLE);
-            } else if (this.isLongIdle()) {
-                this.playAnimation(this.IMAGES_LONGIDLE);
-            } else if (this.isHurt()) {
-                this.playAnimation(this.IMAGES_HURT);
-            } else if (this.isAboveGround()) {
-                this.playAnimation(this.IMAGES_JUMPING);
-            } else {
-                if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
-                    this.playAnimation(this.IMAGES_WALKING);
-                }
-            }
-
-            /* Audio */
-            if (this.isHurt() && !this.hurtPlayed) {
-                this.hurt_sound.play();
-                this.hurtPlayed = true;
-            }
-
+            this.characterStates();
         }, 1000 / 15);
     }
 
+    /**
+     * This checks the Keyboard Arrow Right Event, moves the character to the right and plays a walking audio.
+     * As well it sets otherDirection to false which is needed to mirror the image to the right.
+     */
+    characterRight() {
+        if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
+            this.lastAction = new Date().getTime();
+            this.otherDirection = false;
+            this.moveRight();
+            if (audio) {
+                this.walking_sound.play();
+            }
+        }
+    }
+
+    /**
+     * This checks the Keyboard Arrow Left Event, moves the character to the left and plays a walking audio.
+     * As well it sets otherDirection to true which is needed to mirror the image to the left.
+     */
+    characterLeft() {
+        if (this.world.keyboard.LEFT && this.x > 0) {
+            this.lastAction = new Date().getTime();
+            this.otherDirection = true;
+            this.moveLeft();
+            if (audio) {
+                this.walking_sound.play();
+            }
+        }
+    }
+
+    /**
+     * This checks the Keyboard Space Event, moves the character upwards and plays a jump audio.
+     * It calls the jump() method which initiates the jump of the character.
+     */
+    characterJump() {
+        if (this.world.keyboard.SPACE && !this.isAboveGround()) {
+            this.lastAction = new Date().getTime();
+            this.jump();
+            if (audio) {
+                this.jumping_sound.play();
+            }
+        }
+    }
+
+    /**
+     * This method checks the states of the character and play Images accordingly.
+     */
+    characterStates() {
+        if (this.isDead() && !this.deadShown) {
+            this.gameOverState();
+        }  else if (this.isHurt()) {
+            this.playAnimation(this.IMAGES_HURT);
+            this.playCharacterHurtAudio();
+        } else if (this.isLongIdle()) {
+            this.playAnimation(this.IMAGES_LONGIDLE);
+        } else if (this.isAboveGround()) {
+            this.playAnimation(this.IMAGES_JUMPING);
+        } else if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
+            this.playAnimation(this.IMAGES_WALKING);
+        } else if (this.isIdle()) {
+            this.playAnimation(this.IMAGES_IDLE);
+        }
+    }
+
+    /**
+     * This is called when the character is dead an the game is over.
+     * This plays a dead animation and calls animate Dead method.
+     */
+    gameOverState() {
+        world.gameEnd = true;
+        world.gameLost = true;
+        this.playAnimation(this.IMAGES_DEAD);
+        this.animateDead();
+    }
+
+    /**
+     * This checks if character is Hurt and plays audio if so.
+     */
+    playCharacterHurtAudio() {
+        if (this.isHurt() && !this.hurtPlayed) {
+            this.hurt_sound.play();
+            this.hurtPlayed = true;
+        }
+    }
+
+    /**
+     * This animate the characters dead by playing audio and rendering images
+     */
     animateDead() {
         this.deadShown = true;
         if (audio) {
@@ -175,8 +214,6 @@ class Character extends MovableObject {
             clearInterval(this.characterAnimations);
             clearInterval(this.movingAnimations);
             this.loadImage(this.IMAGES_DEAD[3]);
-
-            // Stops the endboss from moving so that it will not become visible when game ended
             clearInterval(this.world.level.enemies[6].movingAnimations);
         }, 1000);
     }

@@ -37,39 +37,50 @@ class Chicken extends MovableObject {
         this.animate();
     }
 
-    animate() {        
-        // Check Interval
+    /**
+     * Animate function is called once when creating a Chicken and the Intervals check attack and dead state.
+     * As well intervals playing walking images and moving the chicken left
+     */
+    animate() {
         this.chickenAnimations = setInterval(() => {
-            if (this.attack && !this.attackSoundPlayed) {
-                this.speed = 1.5;
-            }
-
-            if (this.isDead()) {                
-                this.active = false;
-                this.playAnimation(this.IMAGES_DEAD);
-                clearInterval(this.walkInt);
-                clearInterval(this.moveInt);
-                setTimeout(() => {                    
-                    this.removeObject();
-                },1500)
-            }
-
-            if (this.isDead() && !this.crushPlayed) {
-                if (audio) {
-                    this.crush_sound.play();
-                }
-                this.crushPlayed = true;
-            }
+            this.chickenAttack();
+            this.chickenDead();
+            this.chickenDeadAudio();            
         }, 1000 / 20);
 
-        // Walk Animation Interval
         this.walkingAnimations = setInterval(() => {
             this.playAnimation(this.IMAGES_WALKING);
         }, 1000 / 8);
 
-        // Move Left Animation Interval
         this.movingAnimations = setInterval(() => {
             this.moveLeft();
         }, 1000/60)
+    }
+
+    chickenDead() {
+        if (this.isDead()) {                
+            this.active = false;
+            this.playAnimation(this.IMAGES_DEAD);
+            clearInterval(this.walkInt);
+            clearInterval(this.moveInt);
+            setTimeout(() => {                    
+                this.removeObject();
+            },1500)
+        }
+    }
+
+    chickenAttack() {
+        if (this.attack && !this.attackSoundPlayed) {
+            this.speed = 1.5;
+        }
+    }
+
+    chickenDeadAudio() {
+        if (this.isDead() && !this.crushPlayed) {
+            if (audio) {
+                this.crush_sound.play();
+            }
+            this.crushPlayed = true;
+        }
     }
 }

@@ -16,6 +16,13 @@ class ThrowableObject extends MovableObject {
         'img/6_salsa_bottle/bottle_rotation/4_bottle_rotation.png',
     ];
 
+    offset = {
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0
+    }
+
     throw_sound = new Audio('audio/throw.mp3');
     splash_sound = new Audio('audio/splash.mp3');
 
@@ -31,10 +38,14 @@ class ThrowableObject extends MovableObject {
         this.throw();
     }
 
-    throw() {        
-        this.speedY = 20 ; 
+    /**
+     * This method is called when creating a throwable Object and animates the bottle throwing starting from the character.
+     * As well it rotestes the images and  plays a sound when throwing.
+     */
+    throw() {
+        this.speedY = 11 ; 
         this.applyGravity();
-        this.movingAnimations = setInterval(() => {
+        this.movingAnimations = setInterval(() => {            
             this.x += 20;
             this.playAnimation(this.IMAGES_ROTATE);
         }, 25);
@@ -43,11 +54,18 @@ class ThrowableObject extends MovableObject {
         }       
     }
 
+    /**
+     * This method runs when the bottle collides with an object and plays a Splash Animation, 
+     * removes the object and plays a splash sound.
+     */
     splash() {
+        clearInterval(this.movingAnimations);
         this.playAnimation(this.IMAGES_SPLASH);
-        this.removeObject();
         if (audio) {
             this.splash_sound.play();
         }
+        setTimeout(() => {
+            this.removeObject();
+        }, 1500);
     }
 }

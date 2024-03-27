@@ -1,10 +1,12 @@
 class World {
+
     gameEnd = false;
     gameWon = false;
 
     requestframeid;
 
-    movableObject = new MovableObject();
+    interval = new Interval();
+    collision = new Collision();
     character = new Character();
     healthBar = new HealthBar(); // Character Health
     endbossBar = new EndbossBar(); // Endboss Health Bar
@@ -19,10 +21,14 @@ class World {
     keyboard;
     camera_x = 0;
 
+    totalBottles = 5;
+    bottlePower = 30;
     bottlescore = 0;
+    coinTotal = 5;
     coinscore = 0;
     bottle;
 
+    backgroundSound = new Audio('audio/music.mp3')
     coin_sound = new Audio('audio/coin.mp3');
     bottle_sound = new Audio('audio/bottle.mp3');
 
@@ -33,263 +39,197 @@ class World {
         this.keyboard = keyboard;
         this.draw();
         this.setWorld();
-        this.checkCollision();
+        this.checkConstantly();
         this.throwObject();
     }
 
     mainInterval;
 
-    //this function sets a world object for the character
+    /**
+     * This method sets a world object for the character
+     */
     setWorld() {
         this.character.world = this;
+        this.collision.world = this;
+        this.interval.world = this;
     }
 
-    //Interval 60tps to check collisions and if game is over
-    checkCollision() {
+    playBackgroundMusic() {
+        if (audio) {
+            this.backgroundSound.play();
+            this.backgroundSound.volume = .1;
+        } else if (!audio) {
+            this.backgroundSound.pause();
+        }
+    }
+
+    /**
+     * This method checks for ALL collisions during the game
+     */
+    checkConstantly() {
         this.mainInterval = setInterval(() => {
-            // Check collisions
-            this.checkCollisions();
-        }, 1000 / 60);
+            this.collision.checkCollisions();
+            this.playBackgroundMusic();
+        }, 1000 / 120);
     }
 
-    // Interval 10 fps to check throw Objects
+    /**
+     * This method checks if Key D is pressed and calls method to throw a bottle when event is triggered.
+     */
     throwObject() {
         this.throwObjectsInterval = setInterval(() => {
-            // Check throwobjects
             this.throwObjects();
         }, 1000 / 10);
     }
 
+    /**
+     * This method checks if bottles are avaiable and if so, a new Throwable Object is made and thrown.
+     * Also it adjusts the bottleBar and the bottlescore accordingly.
+     */
     throwObjects() {
         if (this.keyboard.D == true && this.bottlescore > 0) {
             this.bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
             this.throwableObjects.push(this.bottle);
             this.bottlescore--;
-            this.bottlesBar.setPercentage(this.bottlescore * 100 / 5);
+            this.bottlesBar.setPercentage(this.bottlescore * (100 / this.totalBottles));
         }
     }
 
-    checkCollisions() {
-        // Character hitting Poult OR Chicken        
-        this.level.enemies
-            .filter(enemy => enemy instanceof Poult || enemy instanceof Chicken)
-            .forEach(enemy => {
-                if (this.character.isCollidingRough(enemy) && this.character.isAbove(enemy) && enemy.active) {
-                    enemy.energy = 0;
-                    clearInterval(enemy.walkingAnimations);
-                    clearInterval(enemy.movingAnimations);
-                };
-            })
-
-        // Poult hitting Character
-        this.level.enemies
-            .filter(enemy => enemy instanceof Poult)
-            .forEach(enemy => {
-                if (this.character.isCollidingRough(enemy) && !this.character.isAbove(enemy) && enemy.active) {
-                    this.character.hit(10);
-                    this.healthBar.setPercentage(this.character.energy);
-                }
-            })
-
-        // Chicken hitting Character
-        this.level.enemies
-            .filter(enemy => enemy instanceof Chicken)
-            .forEach(enemy => {
-                if (this.character.isCollidingRough(enemy) && !this.character.isAbove(enemy) && enemy.active) {
-                    this.character.hit(50);
-                    this.healthBar.setPercentage(this.character.energy);
-                }
-                if (enemy.x - this.character.x + this.character.width < 350) {
-                    enemy.attack = true;
-                }
-            })
-
-        // Logic for Endboss  
-        this.level.enemies
-            .filter(enemy => enemy instanceof Endboss)
-            .forEach(enemy => {
-                if (this.character.isCollidingRough(enemy) && enemy.active) {
-                    this.character.energy = 0;
-                    this.healthBar.setPercentage(this.character.energy);
-                };
-            })
-
-        // Character hitting the endboss with a throwable Object(bottle)
-        this.throwableObjects.forEach((bottle) => {
-            let endboss = this.level.enemies[this.level.enemies.length - 1];
-            if (endboss.isCollidingRough(bottle) && bottle.active) {
-                endboss.endbossHit();
-                bottle.splash();
-                this.endbossBar.setPercentage(endboss.energy);
-                bottle.active = false;
-            }
-        })
-
-        // Picking bottles
-        this.level.bottles.forEach((bottle) => {
-            if (this.character.isColliding(bottle) && this.bottlescore < 5 && bottle.isPickable) {
-                bottle.isPickable = false;
-                this.bottlescore += 1;
-                this.bottlesBar.setPercentage(this.bottlescore * 20);
-                bottle.removeObject();
-                if (audio) {
-                    this.bottle_sound.play();
-                }
-            };
-        });
-
-        // Picking Coins
-        this.level.coins.forEach((coin) => {
-            if (this.character.isColliding(coin) && this.coinscore < 5 && coin.isPickable) {
-                coin.isPickable = false;
-                this.coinscore += 1;
-                this.coinsBar.setPercentage(this.coinscore * 20);
-                coin.removeObject();
-                if (audio) {
-                    this.coin_sound.play();
-                }
-            };
-        });
-
-        // Checking if endboss is close to the character
-        if (this.character.isClose(this.level.enemies[this.level.enemies.length - 1])) {
-            this.level.enemies[this.level.enemies.length - 1].alerted = true;
-        }
-    }
-
+    /**
+     * This draws repetively all objects - images to the canvas.
+     * The method repeats itself depending on the graphic card fps rates with the drawFpsReload() method. 
+     */
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         // Moves the camera
         this.ctx.translate(this.camera_x, 0);
+        this.addRelativePositionedObjects();
 
+        // ------ BEGIN Space for Fixed objects on visible Area ---
+        this.ctx.translate(-this.camera_x, 0);
+        this.addAbsoluePositionedObjects();
+        this.ctx.translate(this.camera_x, 0);
+        // ------ END Space for Fixed objects on visible Area -----
+
+        this.ctx.translate(-this.camera_x, 0);
+        this.drawFpsReload();
+        this.checkGameEnd();
+    }
+
+    /**
+     * This method adds all elements which are relative to the Camera and are set 
+     * somewhere in the world and not always visible instantly.
+     */
+    addRelativePositionedObjects() {
         this.addObjectsToMap(this.level.backgroundObjects);
         this.addObjectsToMap(this.level.clouds);
         this.addObjectsToMap(this.level.bottles);
         this.addObjectsToMap(this.level.coins);
+        this.addObjectsToMap(this.level.enemies);
+        this.addObjectsToMap(this.throwableObjects);
+        this.addToMap(this.character);
+    }
 
-        // ------ BEGIN Space for fixed objects ------------
-        this.ctx.translate(-this.camera_x, 0);
+    /**
+     * This objects are objects which are absolute positioned and always visible to the user.
+     * Like the health bar of the character. 
+     */
+    addAbsoluePositionedObjects() {
+
         this.addToMap(this.healthBar);
         this.addToMap(this.endbossBar);
         this.addToMap(this.bottlesBar);
         this.addToMap(this.coinsBar);
-        this.ctx.translate(this.camera_x, 0);
-        // ------ END Space for fixed objects ------------
 
-        this.addToMap(this.character);
-        this.addObjectsToMap(this.level.enemies);
-        this.addObjectsToMap(this.throwableObjects);
+    }
 
-        this.ctx.translate(-this.camera_x, 0);
-
-        // This reloads the draw() method based on graphic card fps rates
+    /**
+     * This method reloads the draw() method based on graphic card fps rates
+     */
+    drawFpsReload() {
         let self = this;
         this.requestframeid = requestAnimationFrame(function () {
             self.draw();
         });
+    }
 
+    /**
+     * This checks the game end and shows the appropriate Endscreend depending if gameWon is true or not.
+     */
+    checkGameEnd() {
         if (this.gameEnd) {
-            if (this.gameWon) {
+            audio = false;
+            if (this.gameWon) {                
                 this.addToMap(new Endscreen(true));
-                this.drawEnd();
+                setTimeout(() => {
+                    this.drawEnd();                    
+                }, 1500);
             } else {
                 this.addToMap(new Endscreen(false));
-                this.drawEnd();
+                setTimeout(() => {
+                    this.drawEnd();                    
+                }, 1500);
             }
-
         }
     }
 
+    /**
+     * This method call the function to clear all the game intervals and cancels the Request Animation frame to stop draw() method.
+     */
     drawEnd() {
         setTimeout(() => {
-            this.clearAllIntervals();
+            this.interval.clearAllIntervals();
             cancelAnimationFrame(this.requestframeid);
         }, 1000);
     }
 
+    /**
+     * This calls the addToMap Method for each object
+     * @param {Array} objects An Array with different objects
+     */
     addObjectsToMap(objects) {
         objects.forEach(o => {
             this.addToMap(o);
         });
     }
 
+    /**
+     * This function checks if Object has otherDirection and calls the draw() method on the object.
+     * @param {Object} obj The Object which is passed. like BackgroundObject
+     * obj.drawFrame(this.ctx); can be added to draw a border to handle collisions easier.
+     */
     addToMap(obj) {
         if (obj.otherDirection) {
             this.flipImage(obj);
         }
-
         obj.draw(this.ctx);
-        //obj.drawFrame(this.ctx);
-
         if (obj.otherDirection) {
             this.flipImageBack(obj);
         }
     }
 
+    /**
+     * This saves the ctx state. 
+     * Then flips the image by its X-Axis, translates the coordintes to the upper right of the object 
+     * and scales the image by mirroring it. After it turns the x value of the object to negative.
+     * @param {Object} mo 
+     * translate remaps the 0/0 coordinates for width px to the right(x)
+     * scale is needed to flip the element horizontally
+     */
     flipImage(mo) {
         this.ctx.save();
-        // translate remaps the 0/0 coordinates for width px to the right(x)
         this.ctx.translate(mo.width, 0);
-        //this is needed to flip the element horizontally
         this.ctx.scale(-1, 1);
-        //mirror x coordinate
         mo.x = mo.x * -1;
     }
 
+    /**
+     * This turns the image back to its normal state by restoring the ctx and turning the x of the object to positive.
+     * @param {*} mo 
+     */
     flipImageBack(mo) {
         mo.x = mo.x * -1;
         this.ctx.restore();
-    }
-
-    clearAllIntervals() {
-        //Clear interval checking if game is running anbd checking for collisions on World
-        clearInterval(this.mainInterval)
-
-        // For the character
-        clearInterval(this.character.movingAnimations);
-        clearInterval(this.character.characterAnimations);
-
-        // For chicken intervals
-        this.level.enemies
-            .filter(enemy => enemy instanceof Chicken)
-            .forEach(enemy => {
-                /* clearInterval(enemy.chickenAnimations);
-                clearInterval(enemy.walkingAnimations);
-                clearInterval(enemy.movingAnimations); */
-                clearInterval(enemy.gravityAnimation);
-            })
-
-        // For poult intervals
-        this.level.enemies
-            .filter(enemy => enemy instanceof Poult)
-            .forEach(enemy => {
-                /* clearInterval(enemy.poultAnimations);
-                clearInterval(enemy.walkingAnimations);
-                clearInterval(enemy.movingAnimations); */
-                clearInterval(enemy.gravityAnimation);
-            })
-
-        // For endboss intervals
-        this.level.enemies
-            .filter(enemy => enemy instanceof Endboss)
-            .forEach(enemy => {
-                clearInterval(enemy.movingAnimations);
-                clearInterval(enemy.hurtAnimations);
-                clearInterval(enemy.deadAnimations);
-            })
-
-        //backgroundobjects clouds etc
-        this.level.clouds
-            .forEach(cloud => {
-                clearInterval(cloud.movingAnimations);
-            })
-
-        // bottles gravity
-        this.throwableObjects
-            .forEach(tho => {
-                clearInterval(tho.gravityAnimation);
-                clearInterval(tho.movingAnimations);
-            })
     }
 }

@@ -1,4 +1,4 @@
-class Poult extends MovableObject {  
+class Poult extends MovableObject {
 
     x = 100;
     y = 390;
@@ -33,32 +33,58 @@ class Poult extends MovableObject {
         this.animate();
     }
 
-    animate() {        
-        // Check Interval
+    /**
+     * This animate method is called when creating a Poult and moves it, 
+     * plays walking images and checking for attack state and dead state.
+     */
+    animate() {
         this.poultAnimations = setInterval(() => {
-            if (this.attack) {
-                this.speed = 1.5;
-            }
-
+            this.poultAttack();
             if (this.isDead()) {
-                this.active = false;
-                this.playAnimation(this.IMAGES_DEAD);
-                clearInterval(this.walkInt);
-                clearInterval(this.moveInt);
-                setTimeout(() => {                    
-                    this.removeObject();
-                },1500)
+                this.poultDead();
             }
         }, 1000 / 20);
+        this.poultWalk();
+        this.poultMoveLeft();        
+    }
 
-        // Walk Animation Interval
+    /**
+     * This method adds the speed of the Obejct when in attack mode
+     */
+    poultAttack() {
+        if (this.attack) {
+            this.speed = 1.5;
+        }
+    }
+
+    /**
+     * This method is called whn object is dead. It clears the intervals, removes the object and set it to inactive.
+     */
+    poultDead() {
+        this.active = false;
+        this.playAnimation(this.IMAGES_DEAD);
+        clearInterval(this.walkInt);
+        clearInterval(this.moveInt);
+        setTimeout(() => {
+            this.removeObject();
+        }, 1500)
+    }
+
+    /**
+     * This method animates the walking.
+     */
+    poultWalk() {
         this.walkingAnimations = setInterval(() => {
             this.playAnimation(this.IMAGES_WALKING);
         }, 1000 / 8);
+    }
 
-        // Move Left Animation Interval
+    /**
+     * This method moves the Poult to the left
+     */
+    poultMoveLeft() {
         this.movingAnimations = setInterval(() => {
             this.moveLeft();
-        }, 1000/60)
+        }, 1000 / 60)
     }
 }

@@ -22,13 +22,20 @@ class CoinsBar extends DrawableObject {
         this.setPercentage(0);
     }
 
-    // setPercentage(50); setzt den percentage auf 50
+    /**
+     * This sets the coins bar to a given percentage
+     * @param {Number} percentage Sets the percentage of the bar 
+     */
     setPercentage(percentage) {
         this.percentage = percentage; // => 0 ... 5 and creates let percentage
         let path = this.IMAGES_COINS[this.resolveImageIndex()];
         this.img = this.imageCache[path];
     }
 
+    /**
+     * This resolves the percentage and sets the corresponding image
+     * @returns {Number} Index of Image from IMAGE Array
+     */
     resolveImageIndex() {
         if (this.percentage == 100) {
             return 5;

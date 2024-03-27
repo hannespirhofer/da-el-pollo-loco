@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
@@ -8,7 +8,10 @@
     
     <title>El Pollo Loco</title>
 
+    <script src="levels/level1-media.js"></script>
     <script src="models/world.class.js"></script>
+    <script src="models/collision.class.js"></script>
+    <script src="models/interval.class.js"></script>
     <script src="models/drawable-object.class.js"></script>
     <script src="models/health-bar.class.js"></script>
     <script src="models/endboss-bar.class.js"></script>
@@ -28,15 +31,14 @@
     <script src="models/bottle.class.js"></script>
     <script src="models/coin.class.js"></script>
     <script src="levels/level1.js"></script>
-    <script src="js/game.js"></script>
     
 </head>
-<body>
+<body onload="preloadMedia()">
 
     <h1>El Pollo Loco</h1>
-    <div class="container">
+    <div id="mainContainer" class="container">
         <div id="help-box" class="help-bar">
-            <div class="help info" onclick="showInfoBox()">Info</div>
+            <div class="help info" id="helpoverlay" onclick="toggleInfobox(event)" ontouchstart="toggleInfobox(event)">Info</div>
             <div class="help">
                 <span class="key-description">Move Left</span>
                 <span class="key">LEFT</span>               
@@ -55,28 +57,42 @@
             </div>            
         </div>  
         <div id="infobox" class="info-box d-none">
-            <div class="close" onclick="closeInfoBox()">X</div>
+            <div class="close" onclick="toggleInfobox(event)" ontouchstart="toggleInfobox(event)">X</div>
             <div class="instructions-box">
                 El Pollo Loco is a 2D action game where a Mexican hero 
                 battles against chicks, chickens, and a giant chicken boss.<br><br> 
                 Jump on chicks and chickens, and hurl Tabasco bottles at 
-                the boss to win.<br><br> Hit the boss three times to emerge victorious!</div>
+                the boss to win.<br><br> Hit the boss to emerge victorious!</div>
         </div> 
         <div id="overlay-icons" class="overlay">
-            <div class="overlay-icon mute" id="mutebtn" onclick="toggleAudio()">
+            <div class="overlay-icon overlay-icon-menu" id="menu" onclick="toggleMenu(event)" ontouchstart="toggleMenu(event)">
+                <img src="img/menu.png">
+            </div>
+            <div class="overlay-icon mute" id="audiobtn" onclick="toggleAudio(event)" ontouchstart="toggleAudio(event)">
                 <img id="audioimg" src="img/sound.png">
             </div>
-            <div class="overlay-icon fullscreen" onclick="toggleFullScreen()">
+            <div class="overlay-icon fullscreen" onclick="toggleFullScreen(event)" ontouchstart="toggleFullScreen(event)">
                 <img src="img/fullscreen.png">
             </div>            
+        </div>        
+        <div class="mobile-control d-none" id="control-icons">            
+            <div class="mobile-icon icon-left" id="left"></div>
+            <div class="mobile-icon icon-right" id="right"></div>
+            <div class="mobile-icon icon-jump" id="space"></div>
+            <div class="mobile-icon icon-bottle" id="d"></div>
         </div>
         <div id="startpage" class="start-page">
-            <div class="start-btn" onclick="startGame()">Start Game</div>            
+            <div class="start-btn" onclick="startGame(event)" ontouchstart="startGame(event)">Start Game</div>            
         </div>
         <div id="endPage" class="end-page d-none">
-            <div class="restart-btn" onclick="window.location.reload()">RESTART</div>
+            <div class="restart-btn" onclick="window.location.reload()" ontouchstart="window.location.reload()">RESTART</div>
         </div>
         <canvas id="canvas" class="d-none" width="720" height="480"></canvas>
     </div>
+    <div class="turn-phone-overlay">
+        Turn the screen to play the game
+    </div>
+
+    <script src="js/game.js"></script>
 </body>
 </html>
